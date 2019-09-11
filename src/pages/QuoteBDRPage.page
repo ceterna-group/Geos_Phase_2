@@ -1,0 +1,270 @@
+<!--
+    @PageName  : QuoteBDRPage
+    @Purpose   : To show Enquiry and QuoteLineItems along with static text.
+    @Created By: Ameya Borkar
+    @Design By : Ameya Borkar
+    @Date      : 15th Nov, 2017
+-->
+<apex:page standardController="opportunity" extensions="QuoteBDRController" standardStylesheets="false" renderAs="pdf">
+    <apex:outputPanel rendered="{!IF($CurrentPage.parameters.Id == NULL, true, false)}">
+        <apex:pageMessage severity="error" summary="No Enquiry ID provided!"/>
+        <apex:pageMessages />
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!IF($CurrentPage.parameters.Id != NULL, true, false)}">
+        <html>
+            <body>
+                <div>
+                    <table width="100%">
+                        <tr >
+                            <td style="padding-top: 25px;">
+                                <apex:image id="geosGroupLogo" url="{!geosGroupLogoUrl}"/>
+                            </td>
+                            <td style="padding-top: 10px; padding-left: 50px; padding-top: 40px;">
+                                <apex:image id="seaBunkeringLogo" url="{!seaBunkeringLogoUrl}"/>
+                            </td>
+                            <td>
+                                <div style="display:inline-block; font-size:9px; border: 1px solid black; text-align: center; float: right;">
+                                    <b>SEA BUNKERING LTD.</b>
+                                    <br/>CHILTERN HOUSE
+                                    <br/>45 STATION ROAD, HENLEY ON THAMES
+                                    <br/>OXON RG9 1AT
+                                    <br/>TELEPHONE: +44 (0) 1491 845474
+                                    <br/>EMAIL: COMMERCIAL@GEOSGROUP.COM
+                                    <br/><b>MARINE BUNKER DELIVERY NOTE</b>
+                                    <br/>NOT A VALID DOCUMENT FOR VAT CLAIMS
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+                <table width="100%" style="border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td width="25%" style="border-top: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>DELIVERED TO:</b>
+                                <br/><b>(VESSEL NAME)</b>
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-right: 1px solid black; text-align: left;">
+                                {!oppWrapper.VesselName}
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-bottom: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>AT:</b>
+                                <br/><b>(PORT)</b>
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; text-align: left;">
+                                {!oppWrapper.Port}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="25%" style="border-bottom: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>IMO:</b>
+                            </td>
+                            <td width="25%" style="border-right: 1px solid black; border-bottom: 1px solid black; text-align: left;">
+                                {!oppWrapper.IMONumber}
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-bottom: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>ORDER NUMBER:</b>
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; text-align: left;">
+                                {!oppWrapper.Name}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td width="25%" style="border-top: 1px solid black; border-bottom: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>AGENCY:</b>
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; text-align: left;">
+                                SEA BUNKERING LIMITED
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-bottom: 1px solid black; border-left: 1px solid black; text-align: center;">
+                                <b>SUPPLIER BASE:</b>
+                            </td>
+                            <td width="25%" style="border-top: 1px solid black; border-right: 1px solid black; border-bottom: 1px solid black; text-align: left;">
+                                {!oppWrapper.DeliveryTerminalName}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/>
+                <table width="100%" style="border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="border: 1px solid black;">
+                                PRODUCT
+                            </th>
+                            <th style="border: 1px solid black;">
+                                STORAGE TEMPERATURE
+                            </th>
+                            <th colspan="2" style="border: 1px solid black;">
+                                DETAILS AT 15 DEGREE CELCIUS
+                            </th>
+                            <th rowspan="2" style="border: 1px solid black;">
+                                NET WEIGHT METRIC TONNES
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="border: 1px solid black;">
+                                MEASURED (NAT) LITRES
+                            </th>
+                            <th style="border: 1px solid black;">
+                                LITRES
+                            </th>
+                            <th style="border: 1px solid black;">
+                                DENSITY
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!quoteLineWrapperList}" var="quoteLinewrapper">
+                            <tr>
+                                <td style="border: 1px solid black;">
+                                    <!--{!quoteLinewrapper.ProductOrService}-->
+                                    Marine Gas Oil 0.1% (max) Sulphur BS2869:2017
+                                </td >
+                                <td style="border: 1px solid black;">
+                                    <apex:outputPanel rendered="{!IF(quoteLinewrapper.NewRecord, false, true)}">
+                                        <apex:outputText value="{0, number, {!IF(quoteLinewrapper.NaturalLitres > 999,'0,000.000','0.000')}}"> 
+                                            <apex:param value="{!quoteLinewrapper.NaturalLitres}" />
+                                        </apex:outputText>
+                                    </apex:outputPanel>
+                                </td>
+                                <td style="border: 1px solid black;">
+                                    <apex:outputPanel rendered="{!IF(quoteLinewrapper.NewRecord, false, true)}">
+                                        <apex:outputText value="{0, number, {!IF(quoteLinewrapper.Litres_15Degrees > 999,'0,000.000','0.000')}}"> 
+                                            <apex:param value="{!quoteLinewrapper.Litres_15Degrees}" />
+                                        </apex:outputText>
+                                    </apex:outputPanel>
+                                </td>
+                                <td style="border: 1px solid black;">
+                                    <apex:outputPanel rendered="{!IF(quoteLinewrapper.NewRecord, false, true)}">
+                                        <apex:outputText value="{0, number, {!IF(quoteLinewrapper.Density > 999,'0,000.000','0.000')}}"> 
+                                            <apex:param value="{!quoteLinewrapper.Density}" />
+                                        </apex:outputText>
+                                    </apex:outputPanel>
+                                </td >
+                                <td style="border: 1px solid black;">
+                                    <apex:outputPanel rendered="{!IF(quoteLinewrapper.NewRecord, false, true)}">
+                                        <apex:outputText value="{0, number, {!IF(quoteLinewrapper.MetricTonnes > 999,'0,000.000','0.000')}}"> 
+                                            <apex:param value="{!quoteLinewrapper.MetricTonnes}" />
+                                        </apex:outputText>
+                                    </apex:outputPanel>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+                <br/>
+                <div style="border: 2px solid blue; font-size: 11px; padding: 5px;">
+                    <div style="text-align: center"><b>BELOW TO BE COMPLETED BY DELIVERY OPERATIVE/DRIVER</b></div>
+                    <br/>
+                    <span>SAMPLES WERE DRAWN AND DELIVERED IN THE PRESENCE OF MASTER, <br />CHIEF ENGINEER OR OTHER SHIP'S REPRESENTATIVE.</span>
+                    <span style="float: right"><b>YES/NO</b></span>
+                    <table width="100%" style="border-collapse: collapse">
+                        <thead>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid black;">
+                                    VEHICLE OR METER
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </td>
+                                <td style="border: 1px solid black;">
+                                    SAMPLE SEAL NUMBERS:
+                                    <br/><br/>MARPOL ANNEX VI: VESSEL
+                                    <br/><br/>REPRESENTATIVE: VESSEL
+                                    <br/>
+                                </td >
+                                <td style="border: 1px solid black;">
+                                    HAULIER/OPERATOR
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border: 1px solid black;">
+                                    THE CONSIGNMENT DESCRIBED <b>DRIVERS DECLARATION</b>
+                                    <br/>ABOVE HAS BEEN RECEIVED INTO MY VEHICLE. 
+                                    THE VEHICLE IS CORRECTLY LABELLED AND PLACECARDED. 
+                                    I AM IN POSSESSION OF ALL NECESSARY TRANSPORT DOCUMENTATION INCLUDING INFORMATION TO BE FOLLOWED IN AN EMERGENCY. 
+                                    I POSSESS APPROPRIATE CERTIFICATION OF COMPETENCE TO CARRY THIS PRODUCT. 
+                                    MY VEHICLE IS IN COMPLIANCE WITH ALL APPLICABLE LEGISLATION AND IS IN ALL RESPECTS FIT FOR THE CARRIAGE OF THESE GOODS. 
+                                    I UNDERSTAND THAT ANY INCORRECT STATEMENT TO THE ABOVE MAKES THE VESSEEL OWNER LIABLE TO FINANCIAL PENALTY.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border: 1px solid black;">
+                                    IT IS HEREBY DECLARED AND CERTIFIED THAT THE FUEL OIL SUPPLIED IS IN CONFORMITY WITH REGULATION 13 (2) OR (3) (A) 
+                                    AND REGULATION 16 (2) &amp; (3) OF THE MERCHANT SHIPPING (PREVENTION OF AIR POLLUTION FROM SHIPS) REGULATIONS 2005 OR 
+                                    REGULATION 14 (1) OR 14 (4) (A) AND REGULATION 18 (1) OF MARPOL ANNEX VI.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" style="border: 1px solid black;">
+                                    DELIVERED ABOVE QUANTITY
+                                    <br/>
+                                    <br/>
+                                    <br/>
+                                    <div style="display: inline-block;">
+                                        DELIVERY OPERATIVE/DRIVER: SIGN AND PRINT NAME
+                                    </div>
+                                    <div style="display: inline-block; float: right;">
+                                        FOR SEA BUNKERING LTD
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <br/>
+                <div style="border: 2px solid blue; font-size: 11px; padding: 5px;">
+                    <div style="text-align: center">
+                        <b>BELOW TO BE COMPLETED BY SHIPS MASTER OR CHIEF ENGINEER (2 X SIGNATURE &amp; VESSEL STAMPS)</b>
+                    </div>
+                    <br />
+                    <span>DESTINATION.........................................DATE...................................</span>
+                    <table width="100%" style="border-collapse: collapse;">
+                        <thead></thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid black;">
+                                    <span><b>DECLARATION FOR RECEIPT OF DUTY FREE PRODUCT EXPORT ONLY. MUST NOT BE USED AS ROAD FUELS</b></span>
+                                    <br/>
+                                    <span>
+                                        RECEIVED ON BOARD THE QUANTITY OF HEAVY OIL SPECIFIED HEREON. IN CONSIDERATION OF THE COMMISSIONERS, CUSTOMS AND EXCISE, 
+                                        CONTRACTING WITH SEA BUNKERING LTD FOR THE DELIVERY OF HEAVY OIL, AT A PRICE WHICH IS REDUCED BY A SUM EQUAL TO THE DUTY 
+                                        PAID ON THAT OIL AND VAT FREE, FOR USE ON BOARD THE SAID SHIP WHILE ENGAGED ON A MARINE VOYAGE, NO CLAIM WILL BE MADE TO 
+                                        THE  COMMISSIONERS UNDER THE HYDROCARBON OIL DUTIES ACT OF 1979 BY OR ON BEHALF OF ..................................... 
+                                        OWNER OF VESSEL, AND IN THE EVENT OF SUCH USE NOT CONCURRING, A SUM EQUAL TO THE DUTY PAID ON THE OIL WILL BE PAID TO THE 
+                                        COMMISSIONERS BY OR ON BEHALF OF THE SAID OWNER.
+                                        <br/><br/>
+                                        SIGN &amp; STAMP ............................................................................. DATE .....................
+                                        <br/>
+                                        (OWNER, MASTER, AUTHORISED AGENT)
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; display: flex;">
+                                    <span>RECEIVED ABOVE QUANTITY IN GOOD ORDER AND CONDITION, DIPS/METER READINGS AGREED</span>
+                                    <br/><br/><br/>
+                                    <div style="display: inline-block;">SIGN, STAMP AND PRINT NAME</div>
+                                    <div style="display: inlineblock; float: right;">MASTER/CHIEF ENGINEER</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <br/>
+                <div style="font-size: 13px; text-align: center;">
+                    <b>SUBJECT TO THE COMPANY’S GENERAL TERMS AND CONDITIONS OF SALE, A COPY OF WHICH CAN BE OBTAINED ON REQUEST</b>
+                </div>
+            </body>
+        </html>
+    </apex:outputPanel>
+</apex:page>

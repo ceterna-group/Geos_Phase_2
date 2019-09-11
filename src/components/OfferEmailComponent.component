@@ -1,0 +1,125 @@
+<apex:component controller="OfferEmailCmpController" access="global">
+    <apex:attribute name="IdEnquiry" type="Id" description="Id of Enquiry" assignTo="{!enquiryId}" />
+
+    <html>
+        <style type="text/css">
+        .tg  {border-collapse:collapse;border-spacing:0;}
+        </style>
+        <body>      
+            <table border="0" width="100%">
+                <tr>
+                    <td align="left" style="font-size:13px; vertical-align:top;width:100%;">
+                        <!--<apex:image id="geosGroupLogo" url="{!EnquiryRecord.geosGroupLogoUrl}" width="200" height="100"/>-->
+                        <apex:image id="geosGroupLogo" url="{!EnquiryRecord.geosGroupLogoUrl}"/>
+                    </td>
+                    <td align="right" style="font-size:13px; vertical-align:top;width:100%;padding-top: 23px;">
+                        <!--<apex:image id="seaBunkeringLogo" url="{!EnquiryRecord.seaBunkeringLogoUrl}" width="250" height="100"/>-->
+                        <apex:image id="seaBunkeringLogo" url="{!EnquiryRecord.seaBunkeringLogoUrl}" />
+                    </td>
+                </tr>
+            </table>        
+            <p>To<!--<br />{!EnquiryRecord.strMastersOrOwners}-->
+                <br /> {!EnquiryRecord.strTo}</p>
+            <p>Customer Address&nbsp;&nbsp;:&nbsp;&nbsp;<br /><apex:outputText value="{!EnquiryRecord.strCustomerAddress}" escape="false" /></p>
+            <p>Reference:&nbsp;{!EnquiryRecord.strReference}</p>
+            <p>Thank you for your enquiry. We are pleased to offer as below:</p>
+                 
+
+            <table class="tg">
+                <tr>
+                    <td class="tg-yw4l">Vessel&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!EnquiryRecord.strVessel}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Port&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!EnquiryRecord.strPort}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Delivery Date&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;
+                        <apex:outputText value="{0,date,dd/MM/yy}"> 
+                            <apex:param value="{!EnquiryRecord.deliveryDate}" /> 
+                        </apex:outputText>                  
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Delivery Method&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!EnquiryRecord.strDeliveryMethod}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Agent&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!EnquiryRecord.strAgent}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Your Ref&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!EnquiryRecord.strCustomerPONumber}</td>
+                </tr>
+            </table >
+            <br/>       
+            <table border = "1" cellspacing = "0" cellpadding="5">
+                <tr>
+                    <th>Qty</th>
+                    <th>Unit Of Measure</th>
+                    <th>Product Or Service</th>
+                    <th>Price</th>
+                    <th>Currency</th>
+                    <th>Unit Of Measure</th>
+                    <th>Total Without Vat</th>
+                    <th>VAT Amount</th>
+                    <th>Total Amount</th>
+                </tr>    
+                <apex:repeat value="{!listOfQuoteLines}" var="recordQuoteLine">
+                    <tr>
+                        <td>
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.qty > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!recordQuoteLine.qty}" />
+                            </apex:outputText>
+                        </td>
+                        <!--<td>{!recordQuoteLine.qty_second}</td>-->
+                        <td>{!recordQuoteLine.strUnitOfMeasureForQty}</td>
+                        <td>{!recordQuoteLine.strProductOrService}</td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, ,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.price}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.price > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!recordQuoteLine.price}" />
+                            </apex:outputText>
+                        </td>     
+                        <td>{!recordQuoteLine.strCurrency}</td>
+                        <td>{!recordQuoteLine.strUnitOfMeasure}</td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, ,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.totalWithoutVat}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.totalWithoutVat > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.totalWithoutVat}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, ,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.vatAmount}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.vatAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.vatAmount}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, ,000.00}"> 
+                                <apex:param value="{!recordQuoteLine.totalAmount}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.totalAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.totalAmount}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>  
+                </apex:repeat>
+            </table>            
+            <p>Notes&nbsp;&nbsp;:&nbsp;&nbsp;{!EnquiryRecord.strNotes}</p>  
+            <p>Unless otherwise stated, price is valid for 1 hour. Please confirm to commercial@geosgroup.com. Your feedback is appreciated.</p>
+            
+            <p>Best Regards <br />
+            {!$User.FirstName} {!$User.LastName}</p>      
+        </body>
+    </html>
+</apex:component>

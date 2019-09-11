@@ -1,0 +1,332 @@
+<apex:component controller="Invoice_UpdatedController" access="global">
+    <apex:attribute name="IdEnquiry" type="Id" description="Id of Enquiry" assignTo="{!enquiryId}" />
+    <html>
+        <style>
+            * {
+                font-size: 12px;
+            }
+            
+            td {
+            width: 25%;
+            padding-right: 10px;
+            padding-left: 10px;
+            }
+            
+            .field-heading {
+            border-right: 0px;
+            text-align: right;
+            }
+            
+            #Bold{
+            font-weight: 900;
+            }
+            
+            #Title{
+            font-weight: bold;
+            font-size: 32px;
+            }
+
+
+        </style>
+        <body>
+            <table border="0" width="100%" color="White" class="table-basic-info">
+                <tr>
+                    <td align="left" style="font-size:13px; vertical-align:top;width:100%;">
+                        <!--<apex:image id="geosGroupLogo" url="{!instanceOpportunityWrapper.geosGroupLogoUrl}" width="200" height="100"/>-->
+                        <apex:image id="geosGroupLogo" url="{!instanceOpportunityWrapper.geosGroupLogoUrl}"/>
+                    </td>
+                    <td align="right" style="font-size:13px; vertical-align:top;width:100%;padding-top: 23px;">
+                        <!--<apex:image id="seaBunkeringLogo" url="{!instanceOpportunityWrapper.seaBunkeringLogoUrl}" width="250" height="100"/>-->
+                        <apex:image id="seaBunkeringLogo" url="{!instanceOpportunityWrapper.seaBunkeringLogoUrl}"/>
+                    </td>
+ 
+                </tr>
+            </table>
+            
+            <p><!--{!instanceOpportunityWrapper.strMastersOrOwners}--></p>
+            
+            <table border="0" width="100%" >
+                <tr>
+                    <td allign="left">
+                    <div id="Title">{!instanceOpportunityWrapper.strinvoiceorcredit}</div>
+                    </td>
+                    </tr>
+            </table>
+            
+            <table border = "0" cellspacing = "0" width="100%;">
+<!--<tr>
+<td colspan="2"></td>
+</tr>-->
+                <tr>
+                    <td class="field-heading">To &nbsp;&nbsp;:&nbsp;&nbsp;</td>
+                    <td>{!instanceOpportunityWrapper.strMastersOrOwners}
+                        <br /> {!instanceOpportunityWrapper.strTo}
+                        <br /> <apex:outputText value="{!instanceOpportunityWrapper.strToAddress}" escape="false" />
+                    </td>
+                    <td class="field-heading">Our Address&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+                    <td>
+                        Sea Bunkering Limited
+                        <br />
+                        <apex:outputText value="{!instanceOpportunityWrapper.strAddress}" escape="false" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Vessel Or Site Name&nbsp;&nbsp;:&nbsp;&nbsp; </td>
+                    <td>{!instanceOpportunityWrapper.strVesselName}</td>
+                    
+                    <td class="field-heading">Invoice No&nbsp;&nbsp;:&nbsp;&nbsp; </td>
+                    <td>{!instanceOpportunityWrapper.strGeosRef}</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Port&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+                    <td>{!instanceOpportunityWrapper.strPort}</td>
+                    
+                    <td class="field-heading">Invoice Date&nbsp;&nbsp;:&nbsp;&nbsp; </td>
+                    <td>
+                        <apex:outputText value="{0,date,dd/MM/yy}"> 
+                            <apex:param value="{!instanceOpportunityWrapper.deliveryDate}" /> 
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Our VAT No&nbsp;&nbsp;:&nbsp;&nbsp; </td>
+                    <td>{!instanceOpportunityWrapper.strOurVatNo}</td>
+                    
+                    <td class="field-heading"></td>
+                    <td></td>
+                </tr>
+                <tr>            
+                    <td class="field-heading">Your VAT No&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+                    <td>{!instanceOpportunityWrapper.strYourVatNo}</td>
+                    
+                    <td class="field-heading">Delivery Date&nbsp;&nbsp;: &nbsp;&nbsp;</td>
+                    <td>
+                        <apex:outputText value="{0,date,dd/MM/yy}"> 
+                            <apex:param value="{!instanceOpportunityWrapper.deliveryDate}" /> 
+                        </apex:outputText>
+                    </td>
+                </tr>           
+                <tr>
+                    <td class="field-heading">Your Ref&nbsp;&nbsp;:&nbsp;&nbsp;</td>
+                    <td>{!instanceOpportunityWrapper.strCustomerPONumber}</td>
+                    
+                    <td class="field-heading">Settlement Date&nbsp;&nbsp;: &nbsp;&nbsp;</td>
+                    <td>
+                        <apex:outputText value="{0,date,dd/MM/yy}"> 
+                            <apex:param value="{!instanceOpportunityWrapper.settlementDate}" /> 
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>        
+            <br/>
+            
+            <table border = "1" cellspacing = "0" width="100%;" class="table-quote-lines">
+                <tr>
+                </tr>
+                <tr>                
+                    <td>Product Or Service</td>
+                    <td>Qty</td>
+                    <td>Unit of Measure</td>
+                    <td>Product Density</td>
+                    <td>Price per UOM</td>
+                    <td>Currency</td>
+                    <td>Total Without VAT</td>
+                    <!--<td>VAT</td>-->
+                    <td>VAT Amount</td>
+                    <td>Total Amount</td>
+                </tr>
+                <apex:repeat value="{!listOfQuoteLineItems}" var="recordQuoteLine">
+                    <tr>
+                        <td>{!recordQuoteLine.strProductOrService}</td>
+                        <td>
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.qty_second > 999,'0,000.000','0.000')}}"> 
+                                <apex:param value="{!recordQuoteLine.qty_second}" />
+                            </apex:outputText>
+                        </td>
+                        <!--<td>{!recordQuoteLine.qty_second}</td>-->
+                        <td>{!recordQuoteLine.strUnitOfMeasure}</td>
+                        <td>
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.density > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!recordQuoteLine.density}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.pricePerUOM}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.pricePerUOM > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!recordQuoteLine.pricePerUOM}" />
+                            </apex:outputText>
+                        </td>
+                        <td>{!recordQuoteLine.decCurrency}</td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.total}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.total > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.total}" />
+                            </apex:outputText>
+                        </td>
+                       <!-- <td>{!recordQuoteLine.vat}</td>-->
+                        <td>
+                            <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.vatAmount}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.vatAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.vatAmount}" />
+                            </apex:outputText>
+                        </td>
+                        <td>
+                            <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                                <apex:param value="{!recordQuoteLine.totalAfterVat}" />
+                            </apex:outputText>-->
+                            <apex:outputText value="{0, number, {!IF(recordQuoteLine.totalAfterVat > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!recordQuoteLine.totalAfterVat}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+            
+            <br/>
+            
+            <table border = "0" cellspacing = "0" width="50%;" class="table-amount">
+                <tr>
+                    <td>CURRENCY</td>
+                    <td>
+                        {!strCurrency}
+                    </td>
+                </tr>
+                <tr>
+                    <td>SUBTOTAL</td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.00}"> 
+                            <apex:param value="{!totalCurrencyISO}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(totalCurrencyISO > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!totalCurrencyISO}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td>VAT</td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.00}"> 
+                            <apex:param value="{!totalVatAmount}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(totalVatAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!totalVatAmount}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                   <td><div id="Bold">TOTAL TO CUSTOMER</div></td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.00}"> 
+                            <apex:param value="{!totalToCustomer}" />
+                        </apex:outputText>-->
+                        <div id="Bold"><apex:outputText value="{0, number, {!IF(totalToCustomer > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!totalToCustomer}" />
+                        </apex:outputText></div>
+                    </td>
+                </tr>
+            </table>
+            
+            <br/>
+            
+            <table border = "0" cellspacing = "0" width="50%;" class="table-bank-details">
+                <tr>
+                    <td colspan="4">Please pay for the A/C Sea Bunkering Ltd to:- Bank Account</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Currency:</td>
+                    <td>GBP</td>
+                    <td>USD</td>
+                    <td>EUR</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Sort Code:</td>
+                    <td>402756</td>
+                    <td>401276</td>
+                    <td>401276</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Account No:</td>
+                    <td>80021482</td>
+                    <td>77716701</td>
+                    <td>77716728</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">IBAN:</td>
+                    <td>GB14HBUK40275680021482</td>
+                    <td>GB76HBUK40127677716701</td>
+                    <td>GB26HBUK40127677716728</td>
+                </tr>
+                 <tr>
+                    <td class="field-heading">Bank BIC:</td>
+                    <td>HBUKGB4B</td>
+                    <td>HBUKGB4B</td>
+                    <td>HBUKGB4B</td>
+                </tr>
+            </table>
+            <br/>
+            <div style="text-align:right;"> 
+            Company Registration No: 02620572
+            </div>
+            
+            <!--<table border = "1" cellspacing = "0" width="50%;" class="table-bank-details">
+                <tr>
+                    <td colspan="2">Please pay bank account</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Currency:</td>
+                    <td>USD/EUR</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Sort Code:</td>
+                    <td>402756</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Account No:</td>
+                    <td>80021482</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">IBAN:</td>
+                    <td>GB74MIDL40275680021482</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Swift:</td>
+                    <td>MIDLGB22XXX</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Account Name:</td>
+                    <td>Sea Bunkering Ltd</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Bank Name:</td>
+                    <td>HSBC Bank PLC</td>
+                </tr>
+                <tr>
+                    <td class="field-heading">Branch Address:</td>
+                    <td>Ground Floor, 
+                        <br />Stratus House, 
+                        <br />Emperor Way, 
+                        <br />Exeter Business Park,
+                        <br />Exeter, 
+                        <br />EX1 3QS
+                    </td>
+                </tr>
+                <tr>
+                    <td class="field-heading">VAT No:</td>
+                    <td>GB 552 0669 47  </td>
+                </tr>
+            </table>
+            
+            <br/>-->
+            
+            
+            
+        </body>
+    </html>
+    
+</apex:component>

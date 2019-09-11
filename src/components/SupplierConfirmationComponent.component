@@ -1,0 +1,125 @@
+<apex:component controller="SupplierConfirmationCmpController" access="global">
+    <apex:attribute name="IdSupplyCostLine" type="Id" description="Id of Supply Cost Line" assignTo="{!supplyCostLineId}" />
+
+    <html>
+        <style type="text/css">
+        .tg  {border-collapse:collapse;border-spacing:0;}
+        </style>
+        <body>   
+            <table border="0" width="100%">
+                <tr>
+                    <td align="left" style="font-size:13px; vertical-align:top;width:100%;">
+                        <!--<apex:image id="geosGroupLogo" url="{!SupplyCostLineRecord.geosGroupLogoUrl}" width="200" height="100"/>-->
+                        <apex:image id="geosGroupLogo" url="{!SupplyCostLineRecord.geosGroupLogoUrl}"/>
+                    </td>
+                    <td align="right" style="font-size:13px; vertical-align:top;width:100%;padding-top: 23px;">
+                        <!--<apex:image id="seaBunkeringLogo" url="{!SupplyCostLineRecord.seaBunkeringLogoUrl}" width="250" height="100"/>-->
+                        <apex:image id="seaBunkeringLogo" url="{!SupplyCostLineRecord.seaBunkeringLogoUrl}" />
+                    </td>
+                </tr>
+            </table>        
+            <p>To <!--<br />{!SupplyCostLineRecord.strMastersOrOwners}-->
+                <br /><!--{!SupplyCostLineRecord.strTo}--> {!SupplyCostLineRecord.strSupplierName}
+                <br /><br />Reference:&nbsp;{!SupplyCostLineRecord.strReference}</p>
+            <p>Thank you for agreeing to supply for Sea Bunkering. Please find below details of delivery.
+            Please liaise closely with all parties to ensure job is successfully carried out.</p>       
+
+            <table class="tg">
+                <tr>
+                    <td class="tg-yw4l">Vessel&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!SupplyCostLineRecord.strVessel}</td>                    
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Port&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!SupplyCostLineRecord.strPort}</td>
+                </tr>               
+                <tr>
+                    <td class="tg-yw4l">Delivery Date&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">
+                        :&nbsp;&nbsp;
+                        <apex:outputText value="{0,date,dd/MM/yy}"> 
+                            <apex:param value="{!SupplyCostLineRecord.deliveryDate}" /> 
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Delivery Method&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!SupplyCostLineRecord.strDeliveryMethod}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Agent&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!SupplyCostLineRecord.strAgent}</td>
+                </tr>
+                <tr>
+                    <td class="tg-yw4l">Your Ref&nbsp;&nbsp;</td>
+                    <td class="tg-yw4l">:&nbsp;&nbsp;{!SupplyCostLineRecord.strCustomerPONumber}</td>
+                </tr>
+            </table >
+            <br/>       
+            <table border = "1" cellspacing = "0" cellpadding="5">
+                <tr>
+                    <th>Qty</th>
+                    <th>Unit Of Measure</th>
+                    <th>Product Or Service</th>
+                    <th>Price</th>
+                    <th>Currency</th>
+                    <th>Unit Of Measure</th>
+                    <th>Total Without Vat</th>
+                    <th>VAT Amount</th>
+                    <th>Total Amount</th>
+                </tr>         
+                <tr>
+                    <td>
+                        <apex:outputText value="{0, number, {!IF(SupplyCostLineRecord.qty > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!SupplyCostLineRecord.qty}" />
+                        </apex:outputText>
+                    </td>
+                    <!--<td>{!SupplyCostLineRecord.qty_second}</td>-->
+                    <td>{!SupplyCostLineRecord.strUnitOfMeasureForQty}</td>
+                    <td>{!SupplyCostLineRecord.strProductOrService}</td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                            <apex:param value="{!SupplyCostLineRecord.price}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(SupplyCostLineRecord.price > 999,'0,000.0000','0.0000')}}"> 
+                                <apex:param value="{!SupplyCostLineRecord.price}" />
+                        </apex:outputText>
+                    </td>     
+                    <td>{!SupplyCostLineRecord.strCurrency}</td>
+                    <td>{!SupplyCostLineRecord.strUnitOfMeasure}</td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                            <apex:param value="{!SupplyCostLineRecord.totalWithoutVat}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(SupplyCostLineRecord.totalWithoutVat > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!SupplyCostLineRecord.totalWithoutVat}" />
+                        </apex:outputText>
+                    </td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.0000}"> 
+                            <apex:param value="{!SupplyCostLineRecord.vatAmount}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(SupplyCostLineRecord.vatAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!SupplyCostLineRecord.vatAmount}" />
+                        </apex:outputText>
+                    </td>
+                    <td>
+                        <!--<apex:outputText value="{0, number, 0,000.00}"> 
+                            <apex:param value="{!SupplyCostLineRecord.totalAmount}" />
+                        </apex:outputText>-->
+                        <apex:outputText value="{0, number, {!IF(SupplyCostLineRecord.totalAmount > 999,'0,000.00','0.00')}}"> 
+                                <apex:param value="{!SupplyCostLineRecord.totalAmount}" />
+                        </apex:outputText>
+                    </td>
+                </tr>         
+            </table>            
+            <p>Notes&nbsp;&nbsp;:&nbsp;&nbsp;{!SupplyCostLineRecord.strNotes}</p>  
+            <p>Supplier is to operate their own Health, Safety &amp; Environment policy. This should incorporate an emergency response procedure.
+                <br /><br />Risk Assessments must be carried out prior to delivery to ensure operations can safely be performed. Any incident is immediately reported to Sea Bunkering. +44 (0) 1491 845474.
+                <br /><br />A formal quality management system is in place. All members of staff, including sub contractors are competent and have received sufficient training to carry out the tasks in a safe professional manner.
+                <br/>Timing of deliveries are managed by supplier. Sea Bunkering must be advised if this becomes an issue.</p>
+            <p>Best Regards <br />
+            {!$User.FirstName} {!$User.LastName}</p>      
+        </body>
+    </html>
+</apex:component>
