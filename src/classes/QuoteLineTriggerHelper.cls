@@ -57,7 +57,8 @@ public with sharing class QuoteLineTriggerHelper {
 		Map<String, Pricing_Contract__c> mapPC = new Map<String, Pricing_Contract__c>();
 
 		for (Pricing_Contract__c eachPricingContract : [SELECT Id, Enquiry_vs_Delivery_Date__c, Uplift_Currency__c,
-															Uplift__c, External_Id__c, FX_Rate_field_API_name__c, Index__r.API_Name_Source__c,
+															Uplift__c, External_Id__c, FX_Rate_field_API_name__c,
+															Index__r.API_Name_Source__c,
 															Index__r.Currency_Source__c, Contract_Valid_To__c,
 															Pricing_Terms__c, Contract_Valid_From__c
 														FROM Pricing_Contract__c
@@ -75,17 +76,25 @@ public with sharing class QuoteLineTriggerHelper {
 		System.debug('setPricingId**' + setPricingId);
 		//loop thru each Quote Line Item and populate price to customer and their valid pricing contract
 		for (String externalId : mapQuoteProduct.keySet()) {
+
 			Quote_Line__c eachQuoteLine = mapQuoteProduct.get(externalId);
+
 			System.debug('eachQuoteLine**' + eachQuoteLine);
-			Date closeDate = mapOpptyEnquiryDate.get(eachQuoteLine.Enquiry__c);
-			Date deliveryDate = mapOpptyDeliveryDate.get(eachQuoteLine.Enquiry__c);
+
+			Date closeDate 		= mapOpptyEnquiryDate.get(eachQuoteLine.Enquiry__c);
+			Date deliveryDate 	= mapOpptyDeliveryDate.get(eachQuoteLine.Enquiry__c);
+
 			Date actualDate;
+
 			Decimal priceToCustomer = 0;
 			//fetch external Id for pricing contract, as external id for each quote line is prefixe with recordId_
 			String pricingContractExternalId = externalId.substring(19);
+
 			System.debug('pricingContractExternalId**' + pricingContractExternalId);
 			System.debug('pricingContractExternalId**' + pricingContractExternalId);
+
 			Id contractId = null;
+
 			if (mapPC.containsKey(pricingContractExternalId)) {
 				isDeliveryContract = mapPC.get(pricingContractExternalId).Enquiry_vs_Delivery_Date__c == 'Enquiry' ? false : true;
 				actualDate = mapPC.get(pricingContractExternalId).Enquiry_vs_Delivery_Date__c == 'Enquiry'
@@ -114,16 +123,16 @@ public with sharing class QuoteLineTriggerHelper {
 						priceToCustomer = null != eachQuoteLine.Density__c ? (priceToCustomer * eachQuoteLine.Density__c) / 1000 : 0;
 					} when 'Metric Tonnes' {
 						priceToCustomer = null != eachQuoteLine.Metric_Tonnes__c ? priceToCustomer : priceToCustomer;
-					}
-					when null {
+					} when null {
 						priceToCustomer = priceToCustomer;
 					}
 				}
 			}
+
 			//set price to customer and contract fields
-			eachQuoteLine.Price_To_Customer_Local_Currency__c =  priceToCustomer;
-			eachQuoteLine.Pricing_Contract__c = contractId;
-			eachQuoteLine.Pricing_Contract_Calculated__c = true;
+			eachQuoteLine.Price_To_Customer_Local_Currency__c 	=  priceToCustomer;
+			eachQuoteLine.Pricing_Contract__c 					= contractId;
+			eachQuoteLine.Pricing_Contract_Calculated__c 		= true;
 			mapQuoteProduct.put(externalId, eachQuoteLine);
 		}
 		if (!mapQuoteProduct.isEmpty()) {
@@ -161,10 +170,11 @@ public with sharing class QuoteLineTriggerHelper {
 
 				mdpWhereClause += ' Date__c <=' + String.valueOf(enquiryDate)+' order by Date__c desc limit 1 ';
 
-				for(Master_Daily_Price__c eachMDP: (List<Master_Daily_Price__c>)GlobalUtil.getSObjectRecords('Master_Daily_Price__c',
-																											 null,
-																											 null,
-																											 mdpWhereClause)) {
+				for(Master_Daily_Price__c eachMDP:
+						(List<Master_Daily_Price__c>)GlobalUtil.getSObjectRecords('Master_Daily_Price__c',
+																				 null,
+																				 null,
+																				 mdpWhereClause)) {
 					mdpWhereClause =' Date__c =' + String.valueOf(eachMDP.Date__c);
 
 				}
@@ -180,14 +190,14 @@ public with sharing class QuoteLineTriggerHelper {
 				mdpWhereClause += 'Date__c =' + String.valueOf(enquiryDate);
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract, displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Latest Monthly Average' {
-				Integer calendarMonthMDP = enquiryDate.Month();
-				Integer calendarYearMDP = enquiryDate.Year();
+				Integer calendarMonthMDP 	= enquiryDate.Month();
+				Integer calendarYearMDP 	= enquiryDate.Year();
 				//use whole months MDP records
 				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Normal Monthly Average' {
-				Integer calendarMonthMDP = enquiryDate.Month();
-				Integer calendarYearMDP = enquiryDate.Year();
+				Integer calendarMonthMDP 	= enquiryDate.Month();
+				Integer calendarYearMDP 	= enquiryDate.Year();
 				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Weekly Lag' {
@@ -198,33 +208,7 @@ public with sharing class QuoteLineTriggerHelper {
 		}
 		return upliftValue;
 	}
-	///**
-	// * Calculates the price for co b and d 1.
-	// *
-	// * @param      eachPricingContract           pricing contract valid for quote item
-	// * @param      enquiryDate      The enquiry date on opportunity object
-	// * @param      displayCurrency  The display currency
-	// *
-	// * @return     The Price To Customer (Local Currency) for CoB and d-1  pricing terms.
-	// */
-	//public static Decimal calculatePriceForCoBAndD1(Pricing_Contract__c eachPricingContract,
-	//        Date enquiryDate,
-	//        String displayCurrency) {
-	//	String fxApiFieldName = eachPricingContract.FX_Rate_field_API_name__c;
-	//	Decimal upliftValue;
-	//	String mdpWhereClause = 'Date__c =' + String.valueOf(enquiryDate);
-	//	List<sObject> listMasterDailyPrice = GlobalUtil.getSObjectRecords('Master_Daily_Price__c',
-	//	                                     null,
-	//	                                     null,
-	//	                                     mdpWhereClause);
-	//	upliftValue = eachPricingContract.Uplift_Currency__c == eachPricingContract.Index__r.Currency_Source__c
-	//	              ? (eachPricingContract.Uplift__c + (Decimal)listMasterDailyPrice[0].get(eachPricingContract.Index__r.API_Name_Source__c))
-	//	              : ((eachPricingContract.Uplift__c * (Decimal)listMasterDailyPrice[0].get(fxApiFieldName)) + ((Decimal)listMasterDailyPrice[0].get(eachPricingContract.Index__r.API_Name_Source__c)));
-	//	if (displayCurrency != eachPricingContract.Uplift_Currency__c) {
-	//		upliftvalue = upliftvalue * (Decimal)listMasterDailyPrice[0].get('FX_Rate_' + eachPricingContract.Uplift_Currency__c + '_' + displayCurrency + '__c');
-	//	}
-	//	return upliftValue;
-	//}
+
 	/**
 	 * Calculates the price for monthly average.
 	 *
@@ -244,10 +228,7 @@ public with sharing class QuoteLineTriggerHelper {
 		Decimal sourceFieldValue 	= 0;
 		Decimal priceToCustomer 	= 0;
 		System.debug(mdpWhereClause + '*mdpWhereClause***');
-		// List<sObject> listMasterDailyPrice = GlobalUtil.getSObjectRecords('Master_Daily_Price__c',
-		//                                      null,
-		//                                      null,
-		//                                      mdpWhereClause);
+
 
 		//find the avg FX rates and value if field to be used to display the price to customer
 		Map<String, Decimal> mapFXRate = GlobalUtil.findAverageFX(mdpWhereClause, eachPricingContract.Index__r.API_Name_Source__c);
@@ -263,8 +244,14 @@ public with sharing class QuoteLineTriggerHelper {
 		//               ? (upliftValue + sourceFieldValue)
 		//               : ((((null != mapFXRate && mapFXRate.containsKey(fxApiFieldName)) ? upliftvalue * mapFXRate.get(fxApiFieldName).setScale(4) : 0)) + sourceFieldValue);
 		//convert source to uplift curreny equivalent
+
+		System.debug('Uplift_Currency__c is ' + eachPricingContract.Uplift_Currency__c + ' and Index__r.Currency_Source__c is  ' + eachPricingContract.Index__r.Currency_Source__c);
+		System.debug('eachPricingContract.FX_Rate_field_API_name__c is ' + eachPricingContract.FX_Rate_field_API_name__c);
+
+
 		if(eachPricingContract.Uplift_Currency__c != eachPricingContract.Index__r.Currency_Source__c) {
-			sourceFieldValue = (mapFXRate.containsKey(eachPricingContract.FX_Rate_field_API_name__c) && null != mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c) )
+			sourceFieldValue = (mapFXRate.containsKey(eachPricingContract.FX_Rate_field_API_name__c) &&
+								null != mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c) )
 							   //Girish P: 12 Sep 2019- changed the logic based on business feedback
 							   //? sourceFieldValue * mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c)
 							   ? sourceFieldValue / mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c)
@@ -273,22 +260,23 @@ public with sharing class QuoteLineTriggerHelper {
 			System.debug(sourceFieldValue);
 
 		}
+
 		priceToCustomer=sourceFieldValue+upliftValue;
 		System.debug(priceToCustomer+'**Before applying Dispaly Currency change');
 
-		// System.debug(upliftValue + '***upliftValue');
-		// System.debug(displayCurrency + '***displayCurrency');
-		//if display current is not same as index, apply FX change rate
-		// if (displayCurrency != eachPricingContract.Index__r.Currency_Source__c) {
-		//      fxAVGApiFieldName =     'FX_Rate_' + eachPricingContract.Index__r.Currency_Source__c + '_' + displayCurrency + '__c';
-		//      decimal val = mapFXRate.get(fxAVGApiFieldName);
-		//      upliftvalue = (mapFXRate.containsKey(fxAVGApiFieldName) && null != mapFXRate.get(fxAVGApiFieldName) ) ? upliftvalue * mapFXRate.get(fxAVGApiFieldName).setScale(4) : upliftvalue;
-		// }
 		if (displayCurrency != eachPricingContract.Uplift_Currency__c) {
-			fxAVGApiFieldName = 'FX_Rate_' + eachPricingContract.Uplift_Currency__c + '_' + displayCurrency + '__c';
-			decimal val = mapFXRate.get(fxAVGApiFieldName);
+//			fxAVGApiFieldName 	= 'FX_Rate_' + eachPricingContract.Uplift_Currency__c + '_' + displayCurrency + '__c';
+			fxAVGApiFieldName 	= 'FX_Rate_' + displayCurrency + '_' + eachPricingContract.Uplift_Currency__c + '__c';
+
+			System.debug('fxAVGApiFieldName is ' + fxAVGApiFieldName);
+
+			Decimal val 		= mapFXRate.get(fxAVGApiFieldName);
+
+			System.debug('found in mapFXRate map is ' + mapFXRate.containsKey(fxAVGApiFieldName));
+
 			priceToCustomer = (mapFXRate.containsKey(fxAVGApiFieldName) && null != mapFXRate.get(fxAVGApiFieldName) )
-							  ? priceToCustomer * mapFXRate.get(fxAVGApiFieldName)
+//							  ? priceToCustomer * mapFXRate.get(fxAVGApiFieldName)
+							  ? priceToCustomer / mapFXRate.get(fxAVGApiFieldName)
 							  : priceToCustomer;
 			System.debug('After Applying the Display conversion');
 			System.debug('Applied rate '+mapFXRate.get(fxAVGApiFieldName));
@@ -297,22 +285,4 @@ public with sharing class QuoteLineTriggerHelper {
 
 		return priceToCustomer.setScale(2);
 	}
-
-	///**
-	// * { function_description }
-	// *
-	// * @param      setOpptyid      The set opptyid
-	// * @param      setQuoteLineId  The set quote line identifier
-	// */
-	//public static void updatePriceToCustomer(Set<String> setOpptyid,
-	//        Set<String> setQuoteLineId) {
-	//	Map<Id, Quote_Line__c> mapQuoteLine = QuoteLineTriggerHelper.getPricingToCustomer(setOpptyid, setQuoteLineId);
-	//	System.debug(mapQuoteLine + '***mapQuoteLine');
-	//	for (Quote_Line__c eachQuote : (List<Quote_Line__c>) Trigger.new) {
-	//		if (mapQuoteLine.containsKey(eachQuote.Id)) {
-	//			eachQuote = mapQuoteLine.get(eachQuote.Id);
-	//		}
-	//		System.debug(eachQuote + '***eachQuote');
-	//	}
-	//}
 }

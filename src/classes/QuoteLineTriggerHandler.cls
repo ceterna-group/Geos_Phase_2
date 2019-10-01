@@ -35,8 +35,8 @@ public with sharing class QuoteLineTriggerHandler extends TriggerHandler {
 		if (Trigger.new.size() > 1 || CONSTANTS.QUOTE_TRIGGER_EXECUTED) {
 			return;
 		}
-		Set<String> setOpptyid = new Set<String>();
-		Set<String> setQuoteLineId = new Set<String>();
+		Set<String> setOpptyid 		= new Set<String>();
+		Set<String> setQuoteLineId 	= new Set<String>();
 		for (Quote_Line__c eachOLT : (List<Quote_Line__c>) Trigger.new) {
 			//if (eachOLT.Price_To_Customer_Local_Currency__c == null 
 			if ((GlobalUtil.isChanged(eachOLT.Id, 'Currency__c')
