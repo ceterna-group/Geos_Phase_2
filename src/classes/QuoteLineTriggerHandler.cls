@@ -39,10 +39,12 @@ public with sharing class QuoteLineTriggerHandler extends TriggerHandler {
 		Set<String> setQuoteLineId = new Set<String>();
 		for (Quote_Line__c eachOLT : (List<Quote_Line__c>) Trigger.new) {
 			//if (eachOLT.Price_To_Customer_Local_Currency__c == null 
-			if ((GLobalUtil.isChanged(eachOLT.Id, 'Currency__c') 
-			|| GLobalUtil.isChanged(eachOLT.Id, 'Product_or_Service__c') 
-			|| GLobalUtil.isChanged(eachOLT.Id, 'Unit_of_Measure_Order_Quantity__c'))
-			        || (eachOLT.Pricing_Contract_Calculated__c == false && eachOLT.Pricing_Contract__c == null && GLobalUtil.isChanged(eachOLT.id, 'Product_or_Service__c'))) {
+			if ((GlobalUtil.isChanged(eachOLT.Id, 'Currency__c')
+			    || GlobalUtil.isChanged(eachOLT.Id, 'Product_or_Service__c')
+			    || GlobalUtil.isChanged(eachOLT.Id, 'Unit_of_Measure_Order_Quantity__c'))
+			        || (eachOLT.Pricing_Contract_Calculated__c == false &&
+                        eachOLT.Pricing_Contract__c == null &&
+                        GlobalUtil.isChanged(eachOLT.Id, 'Product_or_Service__c'))) {
 				setOpptyid.add(eachOLT.Enquiry__c);
 				setQuoteLineId.add(eachOLT.Id);
 			}
