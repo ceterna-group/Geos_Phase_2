@@ -190,6 +190,7 @@ public with sharing class QuoteLineTriggerHelper {
 				mdpWhereClause += 'Date__c =' + String.valueOf(enquiryDate);
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract, displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Latest Monthly Average' {
+				system.debug('using latest monthly average');
 				Integer calendarMonthMDP 	= enquiryDate.Month();
 				Integer calendarYearMDP 	= enquiryDate.Year();
 				//use whole months MDP records
@@ -222,6 +223,7 @@ public with sharing class QuoteLineTriggerHelper {
 													  String displayCurrency,
 													  String mdpWhereClause,
 													  String pricingTerm) {
+
 		String fxApiFieldName 		= eachPricingContract.FX_Rate_field_API_name__c;
 		String fxAVGApiFieldName;
 		Decimal upliftValue 		= eachPricingContract.Uplift__c;
@@ -232,6 +234,9 @@ public with sharing class QuoteLineTriggerHelper {
 
 		//find the avg FX rates and value if field to be used to display the price to customer
 		Map<String, Decimal> mapFXRate = GlobalUtil.findAverageFX(mdpWhereClause, eachPricingContract.Index__r.API_Name_Source__c);
+
+		system.debug('looking at field ' + eachPricingContract.Index__r.API_Name_Source__c);
+
 		sourceFieldValue = null != mapFXRate.get(eachPricingContract.Index__r.API_Name_Source__c)
 						   ? mapFXRate.get(eachPricingContract.Index__r.API_Name_Source__c)
 						   : 0;
@@ -239,11 +244,6 @@ public with sharing class QuoteLineTriggerHelper {
 		System.debug(sourceFieldValue + '***sourceFieldValue');
 		System.debug(JSON.serialize(mapFXRate) + '***mapFXRate');
 		System.debug(eachPricingContract + '***eachPricingContract');
-		//convert uplift to the Source field currency using AVG fx rate based on MDP where clause calculated above
-		// upliftValue = eachPricingContract.Uplift_Currency__c == eachPricingContract.Index__r.Currency_Source__c
-		//               ? (upliftValue + sourceFieldValue)
-		//               : ((((null != mapFXRate && mapFXRate.containsKey(fxApiFieldName)) ? upliftvalue * mapFXRate.get(fxApiFieldName).setScale(4) : 0)) + sourceFieldValue);
-		//convert source to uplift curreny equivalent
 
 		System.debug('Uplift_Currency__c is ' + eachPricingContract.Uplift_Currency__c + ' and Index__r.Currency_Source__c is  ' + eachPricingContract.Index__r.Currency_Source__c);
 		System.debug('eachPricingContract.FX_Rate_field_API_name__c is ' + eachPricingContract.FX_Rate_field_API_name__c);

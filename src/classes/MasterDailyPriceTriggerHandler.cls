@@ -32,6 +32,9 @@ public with sharing class MasterDailyPriceTriggerHandler  extends TriggerHandler
 		 */
 		if (Trigger.new.size() == 1) {
 			for (Master_Daily_Price__c eachMDP : (List<Master_Daily_Price__c>)Trigger.new) {
+
+//				system.debug('')
+
 				Master_Daily_Price__c oldrec = (Master_Daily_Price__c)Trigger.oldMap.get(eachMDP.Id);
 				if (null != eachMDP.Date__c && GlobalUtil.isChanged(eachMDP.id, 'Date__c')) {
 					eachMDP.Unique_Key__c = String.valueof(eachMDP.Date__c);

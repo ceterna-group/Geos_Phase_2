@@ -124,11 +124,15 @@ message.setToAddresses(emailTo);
 	 */
 	public static Map<String, Decimal> findAverageFX(String mdpWhereClause, String apiFieldSource) {
 		System.debug('mdpWhereClause***AVG**' + mdpWhereClause);
-		List<AggregateResult> listAggregate = Database.query('Select AVG(' + apiFieldSource + ')' + apiFieldSource + ',AVG(FX_Rate_EUR_GBP__c)FX_Rate_EUR_GBP__c,'
+		List<AggregateResult> listAggregate = Database.query('Select AVG(' + apiFieldSource + ')' + apiFieldSource
+											+ 	',AVG(FX_Rate_EUR_GBP__c)FX_Rate_EUR_GBP__c,'
 		                                      + ' AVG(FX_Rate_EUR_USD__c)FX_Rate_EUR_USD__c, AVG(FX_Rate_GBP_EUR__c)FX_Rate_GBP_EUR__c,'
 		                                      + ' AVG(FX_Rate_GBP_USD__c)FX_Rate_GBP_USD__c, AVG(FX_Rate_USD_EUR__c)FX_Rate_USD_EUR__c,'
 		                                      + ' AVG(FX_Rate_USD_GBP__c)FX_Rate_USD_GBP__c from'
 		                                      + ' Master_Daily_Price__c where Excluded__c=false AND ' + mdpWhereClause);
+		system.debug('using latest monthly average: getting listAggregate');
+
+
 		Map<String, Decimal> mapFXRate = new Map<String, Decimal> ();
 		String stringResult = JSON.serialize(listAggregate[0]);
 		stringResult = stringResult.replace('"attributes":{"type":"AggregateResult"},', '');
