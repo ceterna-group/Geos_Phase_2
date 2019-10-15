@@ -9,6 +9,9 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 					(GlobalUtil.isChanged(eachOppty.Id, 'Delivery_Date__c')) ||
 					(GlobalUtil.isChanged(eachOppty.Id, 'StageName') &&
 							eachOppty.StageName == 'Order')){
+
+				system.debug('either close or delivery was changed');
+
 				setOppty.add(eachOppty.Id);
 			}
 
