@@ -11,6 +11,9 @@ public with sharing class QuoteLineTriggerHandler extends TriggerHandler {
 		 * return if trigger sze >200. Bulk scenario not considered
 		 * @return     { description_of_the_return_value }
 		 */
+
+		System.debug('executing after insert');
+
 		if (Trigger.new.size() > 1) {
 			return;
 		}
@@ -61,6 +64,7 @@ public with sharing class QuoteLineTriggerHandler extends TriggerHandler {
 			//	System.debug(eachQuote + '***eachQuote');
 			//}
 		}
+
 		CONSTANTS.QUOTE_TRIGGER_EXECUTED=true;
 
 	}

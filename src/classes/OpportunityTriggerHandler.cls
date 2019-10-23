@@ -7,8 +7,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 		for (Opportunity eachOppty : (List<Opportunity>)Trigger.new) {
 			if (isBatch || (GlobalUtil.isChanged(eachOppty.Id, 'CloseDate')) ||
 					(GlobalUtil.isChanged(eachOppty.Id, 'Delivery_Date__c')) ||
-					(GlobalUtil.isChanged(eachOppty.Id, 'StageName') &&
-							eachOppty.StageName == 'Order')){
+					(GlobalUtil.isChanged(eachOppty.Id, 'StageName') && eachOppty.StageName == 'Order')){
 
 				system.debug('either close or delivery was changed');
 

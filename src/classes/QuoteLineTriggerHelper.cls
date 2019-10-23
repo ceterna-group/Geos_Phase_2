@@ -91,7 +91,6 @@ public with sharing class QuoteLineTriggerHelper {
 			String pricingContractExternalId = externalId.substring(19);
 
 			System.debug('pricingContractExternalId**' + pricingContractExternalId);
-			System.debug('pricingContractExternalId**' + pricingContractExternalId);
 
 			Id contractId = null;
 
@@ -101,6 +100,7 @@ public with sharing class QuoteLineTriggerHelper {
 							 ? mapOpptyEnquiryDate.get(eachQuoteLine.Enquiry__c)
 							 : mapOpptyDeliveryDate.get(eachQuoteLine.Enquiry__c);
 			}
+
 			//if contract is valid for product in loop
 			if (mapPC.containsKey(pricingContractExternalId)
 				&& mapPC.get(pricingContractExternalId).Contract_Valid_To__c >= actualDate
@@ -109,12 +109,15 @@ public with sharing class QuoteLineTriggerHelper {
 				Pricing_Contract__c eachPricingContract = mapPC.get(pricingContractExternalId);
 				contractId = eachPricingContract.Id;
 
-				//stop calculation if Normal Monthly Average pricing conytract is found and dates are past
-				if (eachPricingContract.Pricing_Terms__c == 'Normal Monthly Average' && actualDate < Date.Today()) {
-					continue;
-				}
+//				//stop calculation if Normal Monthly Average pricing contract is found and dates are past
+//				if (eachPricingContract.Pricing_Terms__c == 'Normal Monthly Average' && actualDate < Date.today()) {
+//
+//					system.debug('told to CONTINUE');
+//
+//					continue;
+//				}
 
-				//calculate uplift value based on contract pricing ters derived from prcing contract object
+				//calculate uplift value based on contract pricing ters derived from pricing contract object
 				priceToCustomer =  getUplift(eachPricingContract, actualDate, eachQuoteLine.Currency__c);
 
 				//based on unit calculate final price to customer
@@ -128,6 +131,9 @@ public with sharing class QuoteLineTriggerHelper {
 					}
 				}
 			}
+
+			System.debug('the price to customer is **' + priceToCustomer);
+
 
 			//set price to customer and contract fields
 			eachQuoteLine.Price_To_Customer_Local_Currency__c 	=  priceToCustomer;
@@ -153,7 +159,11 @@ public with sharing class QuoteLineTriggerHelper {
 	public static Decimal getUplift(Pricing_Contract__c eachPricingContract,
 									Date enquiryDate,
 									String displayCurrency) {
-		String pricingTerm = eachPricingContract.Pricing_Terms__c;
+
+		system.debug('original date is ' + enquiryDate);
+
+		Date originalDate 	= enquiryDate;
+		String pricingTerm 	= eachPricingContract.Pricing_Terms__c;
 		Decimal upliftValue;
 		String mdpWhereClause = ' ';
 		switch on pricingTerm {
@@ -191,16 +201,22 @@ public with sharing class QuoteLineTriggerHelper {
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract, displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Latest Monthly Average' {
 				system.debug('using latest monthly average');
+				system.debug('DEFINITELY USING LATEST');
 				Integer calendarMonthMDP 	= enquiryDate.Month();
 				Integer calendarYearMDP 	= enquiryDate.Year();
 				//use whole months MDP records
 				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Normal Monthly Average' {
+
+				System.debug('AM USING NORMAL MONTHLY');
 				Integer calendarMonthMDP 	= enquiryDate.Month();
 				Integer calendarYearMDP 	= enquiryDate.Year();
-				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
-				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
+//				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
+				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP +
+						' AND Date__c < ' + String.valueOf(enquiryDate);
+				upliftValue = originalDate >= Date.today() ? 0 : calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
+
 			} when 'Weekly Lag' {
 				//for weekly lag previeous weeks MDP should be fetched
 				mdpWhereClause += GlobalUtil.findWeekClause(enquiryDate - 7);

@@ -88,13 +88,13 @@ global class Batch_RecalculateQuoteLinePrice implements Database.Batchable<sObje
 	 * @return     { description_of_the_return_value }
 	 */
 	@RemoteAction
-	WebService static String reCalculateAffectedOpportunities(String mdpId) {
+	webService static String reCalculateAffectedOpportunities(String mdpId) {
 		String theId = null == mdpId ? ApexPages.currentPage().getParameters().get('id') : mdpId;
-		Master_Daily_Price__c mdp = [Select id, Date__c
-		                             from Master_Daily_Price__c
-		                             where id = :mdpId];
+		Master_Daily_Price__c mdp = [SELECT Id, Date__c
+		                             FROM Master_Daily_Price__c
+		                             WHERE Id = :mdpId];
 		Integer calendarMonth = (mdp.Date__c - 1).month();
-		Id batch = Database.executeBatch(new Batch_RecalculateQuoteLinePrice(mdp.date__c - 1, calendarMonth), 1);
+		Id batch = Database.executeBatch(new Batch_RecalculateQuoteLinePrice(mdp.Date__c - 1, calendarMonth), 1);
 		return 'Success';
 	}
 
