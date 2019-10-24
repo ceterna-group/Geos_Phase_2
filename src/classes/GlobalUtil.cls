@@ -55,13 +55,13 @@ public with sharing class GlobalUtil {
 	 * @param      emailBody     The email body
 	 */
 	public static void sendEmail(String[] emailTo, String emailSubject, String emailBody) {
-		OrgWideEmailAddress[] owea = [select Id from OrgWideEmailAddress where Address = 'commercial@geosgroup.com'];
+		OrgWideEmailAddress[] owea = [SELECT Id FROM OrgWideEmailAddress WHERE Address = 'commercial@geosgroup.com'];
 
 		Messaging.SingleEmailMessage message = new Messaging.SingleEmailMessage();
 		if ( owea.size() > 0 ) {
-    message.setOrgWideEmailAddressId(owea.get(0).Id);
-}
-message.setToAddresses(emailTo);
+			message.setOrgWideEmailAddressId(owea.get(0).Id);
+		}
+		message.setToAddresses(emailTo);
 		message.optOutPolicy = 'FILTER';
 		message.subject = emailSubject;
 		//message.plainTextBody = emailBody;
