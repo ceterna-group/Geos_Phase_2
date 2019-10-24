@@ -109,14 +109,6 @@ public with sharing class QuoteLineTriggerHelper {
 				Pricing_Contract__c eachPricingContract = mapPC.get(pricingContractExternalId);
 				contractId = eachPricingContract.Id;
 
-//				//stop calculation if Normal Monthly Average pricing contract is found and dates are past
-//				if (eachPricingContract.Pricing_Terms__c == 'Normal Monthly Average' && actualDate < Date.today()) {
-//
-//					system.debug('told to CONTINUE');
-//
-//					continue;
-//				}
-
 				//calculate uplift value based on contract pricing ters derived from pricing contract object
 				priceToCustomer =  getUplift(eachPricingContract, actualDate, eachQuoteLine.Currency__c);
 
@@ -160,7 +152,7 @@ public with sharing class QuoteLineTriggerHelper {
 									Date enquiryDate,
 									String displayCurrency) {
 
-		system.debug('original date is ' + enquiryDate);
+		System.debug('original date is ' + enquiryDate);
 
 		Date originalDate 	= enquiryDate;
 		String pricingTerm 	= eachPricingContract.Pricing_Terms__c;
@@ -200,27 +192,29 @@ public with sharing class QuoteLineTriggerHelper {
 				mdpWhereClause += 'Date__c =' + String.valueOf(enquiryDate);
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract, displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Latest Monthly Average' {
-				system.debug('using latest monthly average');
-				system.debug('DEFINITELY USING LATEST');
-				Integer calendarMonthMDP 	= enquiryDate.Month();
-				Integer calendarYearMDP 	= enquiryDate.Year();
+				System.debug('using latest monthly average');
+				System.debug('DEFINITELY USING LATEST');
+				Integer calendarMonthMDP 	= enquiryDate.month();
+				Integer calendarYearMDP 	= enquiryDate.year();
 				//use whole months MDP records
 				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
 				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
 			} when 'Normal Monthly Average' {
-
 				System.debug('AM USING NORMAL MONTHLY');
-				Integer calendarMonthMDP 	= enquiryDate.Month();
-				Integer calendarYearMDP 	= enquiryDate.Year();
-//				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP;
+				Integer calendarMonthMDP 	= enquiryDate.month();
+				Integer calendarYearMDP 	= enquiryDate.year();
 				mdpWhereClause += 'Calendar_Month(Date__c) =' + calendarMonthMDP + ' AND Calendar_YEAR(Date__c)=' + calendarYearMDP +
 						' AND Date__c < ' + String.valueOf(enquiryDate);
 				upliftValue = originalDate >= Date.today() ? 0 : calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
-
 			} when 'Weekly Lag' {
-				//for weekly lag previeous weeks MDP should be fetched
-				mdpWhereClause += GlobalUtil.findWeekClause(enquiryDate - 7);
-				upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
+				System.debug('AM USING WEEKLY LAG');
+				if (enquiryDate > Date.today().toStartOfWeek().addDays(6)){
+					upliftValue = 0;
+				} else {
+					//for weekly lag previeous weeks MDP should be fetched
+					mdpWhereClause += GlobalUtil.findWeekClause(enquiryDate - 7);
+					upliftValue = calculatePriceForMonthlyAvg(eachPricingContract,  displayCurrency, mdpWhereClause, pricingTerm);
+				}
 			}
 		}
 		return upliftValue;
@@ -268,8 +262,6 @@ public with sharing class QuoteLineTriggerHelper {
 		if(eachPricingContract.Uplift_Currency__c != eachPricingContract.Index__r.Currency_Source__c) {
 			sourceFieldValue = (mapFXRate.containsKey(eachPricingContract.FX_Rate_field_API_name__c) &&
 								null != mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c) )
-							   //Girish P: 12 Sep 2019- changed the logic based on business feedback
-							   //? sourceFieldValue * mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c)
 							   ? sourceFieldValue / mapFXRate.get(eachPricingContract.FX_Rate_field_API_name__c)
 							   : sourceFieldValue;
 			System.debug('Converting to uplift value');
@@ -281,7 +273,6 @@ public with sharing class QuoteLineTriggerHelper {
 		System.debug(priceToCustomer+'**Before applying Dispaly Currency change');
 
 		if (displayCurrency != eachPricingContract.Uplift_Currency__c) {
-//			fxAVGApiFieldName 	= 'FX_Rate_' + eachPricingContract.Uplift_Currency__c + '_' + displayCurrency + '__c';
 			fxAVGApiFieldName 	= 'FX_Rate_' + displayCurrency + '_' + eachPricingContract.Uplift_Currency__c + '__c';
 
 			System.debug('fxAVGApiFieldName is ' + fxAVGApiFieldName);
@@ -291,7 +282,6 @@ public with sharing class QuoteLineTriggerHelper {
 			System.debug('found in mapFXRate map is ' + mapFXRate.containsKey(fxAVGApiFieldName));
 
 			priceToCustomer = (mapFXRate.containsKey(fxAVGApiFieldName) && null != mapFXRate.get(fxAVGApiFieldName) )
-//							  ? priceToCustomer * mapFXRate.get(fxAVGApiFieldName)
 							  ? priceToCustomer / mapFXRate.get(fxAVGApiFieldName)
 							  : priceToCustomer;
 			System.debug('After Applying the Display conversion');

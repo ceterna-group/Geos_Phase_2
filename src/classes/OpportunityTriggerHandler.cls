@@ -3,6 +3,11 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
 
 	public override void beforeUpdate() {
 		OpportunityTriggerHelper.updateExternalId();
+
+
+	}
+	public override void afterUpdate() {
+//		OpportunityTriggerHelper.updateExternalId();
 		Set<String> setOppty = new Set<String>();
 		for (Opportunity eachOppty : (List<Opportunity>)Trigger.new) {
 			if (isBatch || (GlobalUtil.isChanged(eachOppty.Id, 'CloseDate')) ||
