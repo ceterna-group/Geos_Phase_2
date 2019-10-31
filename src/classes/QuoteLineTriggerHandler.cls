@@ -17,14 +17,28 @@ public with sharing class QuoteLineTriggerHandler extends TriggerHandler {
 		if (Trigger.new.size() > 1) {
 			return;
 		}
-		Set<String> setQuoteLineId = new Set<String>();
-		Set<String> setOpptyid = new Set<String>();
+
+		Set<String> setQuoteLineId 	= new Set<String>();
+		Set<String> setOpptyid 		= new Set<String>();
+
 		for (Quote_Line__c eachOLT : (List<Quote_Line__c>) Trigger.new) {
-			//if (eachOLT.Pricing_Contract_Calculated__c == false && eachOLT.Pricing_Contract__c == null)
 			setOpptyid.add(eachOLT.Enquiry__c);
 			setQuoteLineId.add(eachOLT.Id);
 		}
-		if (!setOpptyid.isEmpty()) {
+
+//		Map<Id,Opportunity> opps = new Map<Id,Opportunity>(
+//						[SELECT Id, Invoice_Or_Credit__c FROM Opportunity WHERE Id IN :setOpptyid]);
+//
+//		for (Quote_Line__c eachOLT : (List<Quote_Line__c>) Trigger.new) {
+//
+//			if (opps.get(eachOLT.Enquiry__c).Invoice_Or_Credit__c != 'Credit'){
+//				setQuoteLineId.add(eachOLT.Id);
+//			} else {
+//				eachOLT.Price_To_Customer_Local_Currency__c = 0;
+//			}
+//		}
+
+		if (!setQuoteLineId.isEmpty()) {
 			Map<Id, Quote_Line__c> mapQuoteLine = QuoteLineTriggerHelper.getPricingToCustomer(setOpptyid, setQuoteLineId);
 			System.debug('mapQuoteLine**' + mapQuoteLine);
 			update mapQuoteLine.values();

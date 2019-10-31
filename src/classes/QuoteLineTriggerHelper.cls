@@ -24,9 +24,10 @@ public with sharing class QuoteLineTriggerHelper {
 
 		//find Oppoty and their line items where calculations are required
 		for (Opportunity eachOppty : [SELECT Id, AccountId, Delivery_Date__c, Delivery_Terminal__c, CloseDate,
-										  (SELECT Id, Enquiry__c, Litres_15_Deg__c, Metric_Tonnes__c,
-												  Price_To_Customer_Local_Currency__c, Currency__c,
-												  Product_or_Service__c, Unit_of_Measure__c, Density__c
+											Invoice_Or_Credit__c,
+											(SELECT Id, Enquiry__c, Litres_15_Deg__c, Metric_Tonnes__c,
+												Price_To_Customer_Local_Currency__c, Currency__c,
+												Product_or_Service__c, Unit_of_Measure__c, Density__c
 										   FROM Quote_Lines__r
 										   WHERE Product_or_Service__c != NULL
 										   AND Currency__c != NULL
@@ -38,18 +39,26 @@ public with sharing class QuoteLineTriggerHelper {
 									   AND CloseDate != NULL
 									   AND AccountId != NULL AND Delivery_Terminal__c != NULL]) {
 
+			// todo: if it's invoiced need to send an email
+
 			mapOpptyEnquiryDate.put(eachOppty.Id, eachOppty.CloseDate);
 
-			if (null != eachOppty.Delivery_Date__c)
-				mapOpptyDeliveryDate.put(eachOppty.Id, eachOppty.Delivery_Date__c);
-			for (Quote_Line__c eachQuote : eachOppty.Quote_Lines__r) {
-				if (null == setQuoteLineId || (null != setQuoteLineId && setQuoteLineId.contains(eachQuote.Id))) {
-					String externalId = eachOppty.AccountId
-										+ '_' + eachOppty.Delivery_Terminal__c + '_'
-										+ eachQuote.Product_or_Service__c.replace(' ', '_');
-					eachQuote.External_Id__c = eachQuote.Id + '_' + externalId;
-					setPricingId.add(externalId);
-					mapQuoteProduct.put(eachQuote.External_Id__c, eachQuote);
+			system.debug('is insert ' + Trigger.IsInsert);
+
+			if (!(Trigger.IsInsert && eachOppty.Invoice_Or_Credit__c == 'Credit')){
+				if (null != eachOppty.Delivery_Date__c){
+					mapOpptyDeliveryDate.put(eachOppty.Id, eachOppty.Delivery_Date__c);
+				}
+
+				for (Quote_Line__c eachQuote : eachOppty.Quote_Lines__r) {
+					if (null == setQuoteLineId || (null != setQuoteLineId && setQuoteLineId.contains(eachQuote.Id))) {
+						String externalId = eachOppty.AccountId
+								+ '_' + eachOppty.Delivery_Terminal__c + '_'
+								+ eachQuote.Product_or_Service__c.replace(' ', '_');
+						eachQuote.External_Id__c = eachQuote.Id + '_' + externalId;
+						setPricingId.add(externalId);
+						mapQuoteProduct.put(eachQuote.External_Id__c, eachQuote);
+					}
 				}
 			}
 		}
@@ -58,7 +67,7 @@ public with sharing class QuoteLineTriggerHelper {
 
 		for (Pricing_Contract__c eachPricingContract : [SELECT Id, Enquiry_vs_Delivery_Date__c, Uplift_Currency__c,
 															Uplift__c, External_Id__c, FX_Rate_field_API_name__c,
-															Index__r.API_Name_Source__c,
+															Index__r.API_Name_Source__c, Density__c,
 															Index__r.Currency_Source__c, Contract_Valid_To__c,
 															Pricing_Terms__c, Contract_Valid_From__c
 														FROM Pricing_Contract__c
@@ -74,6 +83,7 @@ public with sharing class QuoteLineTriggerHelper {
 
 		System.debug('mapPC**' + mapPC);
 		System.debug('setPricingId**' + setPricingId);
+
 		//loop thru each Quote Line Item and populate price to customer and their valid pricing contract
 		for (String externalId : mapQuoteProduct.keySet()) {
 
@@ -126,11 +136,18 @@ public with sharing class QuoteLineTriggerHelper {
 
 			System.debug('the price to customer is **' + priceToCustomer);
 
-
 			//set price to customer and contract fields
 			eachQuoteLine.Price_To_Customer_Local_Currency__c 	=  priceToCustomer;
+
+			if (mapPC.containsKey(pricingContractExternalId) && mapPC.get(pricingContractExternalId).Density__c != null){
+				eachQuoteLine.Price_To_Customer_Local_Currency__c = priceToCustomer * mapPC.get(pricingContractExternalId).Density__c / 1000;
+			}
+
 			eachQuoteLine.Pricing_Contract__c 					= contractId;
 			eachQuoteLine.Pricing_Contract_Calculated__c 		= true;
+
+			// todo:
+
 			mapQuoteProduct.put(externalId, eachQuoteLine);
 		}
 		if (!mapQuoteProduct.isEmpty()) {
